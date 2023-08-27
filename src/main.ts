@@ -1,43 +1,59 @@
-import { ErrorMapper } from "utils/ErrorMapper";
+let spawn1 = Game.spawns.Spawn1
 
-declare global {
-  /*
-    Example types, expand on these or remove them and add your own.
-    Note: Values, properties defined here do no fully *exist* by this type definiton alone.
-          You must also give them an implemention if you would like to use them. (ex. actually setting a `role` property in a Creeps memory)
+/**
+ * Returns a mapping of creeps based on rooms and roles.
+ */
+function catalogCreeps() {
+  let roleCounts: {[role: string]: number} = {};
+  let roomTotals: {[room: string]: number} = {};
+  let creeps: {[room: string]: {[role: string]: Creep[]}} = {}
 
-    Types added in this `global` block are in an ambient, global context. This is needed because `main.ts` is a module file (uses import or export).
-    Interfaces matching on name from @types/screeps will be merged. This is how you can extend the 'built-in' interfaces from @types/screeps.
-  */
-  // Memory extension samples
-  interface Memory {
-    uuid: number;
-    log: any;
-  }
+  for (let i in Game.creeps) {
+    let creep = Game.creeps[i]
+    let room = creep.room.name
 
-  interface CreepMemory {
-    role: string;
-    room: string;
-    working: boolean;
-  }
-
-  // Syntax for adding proprties to `global` (ex "global.log")
-  namespace NodeJS {
-    interface Global {
-      log: any;
+    if (!(room in creeps)) {
+      creeps[room] = {}
     }
+
+    if (!(room in roomTotals)) {
+      roomTotals[room] = 0
+    }
+    roomTotals[room]++
+
+    let creepRole = creep.memory.role
+    if (!(creepRole in creeps[room])) {
+      creeps[room][creepRole] = []
+    }
+
+    if (!(creepRole in roleCounts)) {
+      roleCounts[creepRole] = 0
+    }
+    roleCounts[creepRole]++
+
+    creeps[room][creepRole].push(creep)
+  }
+
+  let total = 0;
+  for (let role in roleCounts) {
+    total += roleCounts[role];
+  }
+
+  return {
+    creeps: creeps,
+    roleCounts: roleCounts,
+    total: total
   }
 }
 
-// When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
-// This utility uses source maps to get the line numbers and file names of the original, TS source code
-export const loop = ErrorMapper.wrapLoop(() => {
-  console.log(`Current game tick is ${Game.time}`);
+module.exports.loop = () => {
+  let catalog = catalogCreeps();
+  let creeps = catalog.creeps;
+  let roleCounts = catalog.creeps;
+  let totalCreeps = catalog.total;
 
-  // Automatically delete memory of missing creeps
-  for (const name in Memory.creeps) {
-    if (!(name in Game.creeps)) {
-      delete Memory.creeps[name];
-    }
+  console.log(`found ${totalCreeps} creeps`)
+  for (let role in roleCounts) {
+    console.log(`role: ${roleCounts[role]}`)
   }
-});
+}
