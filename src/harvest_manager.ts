@@ -22,7 +22,7 @@ module.exports.HarvestManager = class HarvestManager {
     target: Source
     spawner: StructureSpawn
     base_name: string = "H2RV3ST3R-"
-    base_body = [WORK, CARRY, MOVE, MOVE]
+    base_body = [WORK, CARRY, CARRY, MOVE, MOVE]  // cost (in order) 100 | 50 | 50 | 50 | 50 = 300
     base_memory: HarvesterMemory = {
         state: creepState.HARVESTING,
         role: 'harvester',
